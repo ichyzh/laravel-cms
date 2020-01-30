@@ -7,56 +7,52 @@
     <div class="card card-default">
         <div class="card-header">Posts</div>
         <div class="card-body">
-            <table class="table">
-                <thead>
-                    <th>Image</th>
-                    <th>Title</th>
-                    <th></th>
-                    <th></th>
-                </thead>
-                <tbody>
-                    @foreach($posts as $post)
-                        <tr>
-                            <td>
-                                <img src="{{ asset('/storage/'.$post->image) }}" width="60px" height="60px" alt="{{ $post->title }}">
-                            </td>
-                            <td>
-                                {{ $post->title }}
-                            </td>
-                            <td><button class="btn btn-info btn-sm">Edit</button></td>
-                            <td><button class="btn btn-danger btn-sm">Trash</button></td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-            <!-- Modal -->
-            <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <form action="" method="POST" id="deleteCategoryForm">
-                    @csrf
-                    @method('DELETE')
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteModalLabel">Delete category</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <p class="text-center text-bold">
-                                Are you sure?
-                            </p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
-                            <button type="submit" class="btn btn-danger">Yes</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            </div>
-
+            @if($posts->count() > 0)
+                <table class="table">
+                    <thead>
+                        <th>Image</th>
+                        <th>Title</th>
+                        <th></th>
+                        <th></th>
+                    </thead>
+                    <tbody>
+                        @foreach($posts as $post)
+                            <tr>
+                                <td>
+                                    <img src="{{ asset('/storage/'.$post->image) }}" width="60px" height="60px" alt="{{ $post->title }}">
+                                </td>
+                                <td>
+                                    {{ $post->title }}
+                                </td>
+                                @if($post->trashed())
+                                    <td>
+                                        <form action="{{ route('posts.restore', $post->id) }}" method="POST">
+                                            @csrf
+                                            @method('PUT')
+                                            <button type="submit" class="btn btn-info btn-sm">Restore</button>
+                                        </form>
+                                    </td>
+                                @else
+                                    <td>
+                                        <a href="{{ route('posts.edit', $post->id) }}" class="btn btn-info btn-sm">Edit</a>
+                                    </td>
+                                @endif
+                                <td>
+                                    <form action="{{ route('posts.destroy', $post->id) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            {{ $post->trashed() ? 'Delete' : 'Trash' }}
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                <h3 class="text-center">No Posts Yet!</h3>
+            @endif
         </div>
     </div>
 @endsection

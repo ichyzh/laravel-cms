@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Posts\CreateRequest;
+use App\Http\Requests\Posts\UpdateRequest;
 use App\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PostsController extends Controller
 {
@@ -42,7 +44,8 @@ class PostsController extends Controller
             'title' => $request->title,
             'description' => $request->description,
             'content' => $request->content,
-            'image' => $image
+            'image' => $image,
+            'published_at' => $request->published_at
         ]);
 
         session()->flash('success', 'Post created');
@@ -67,9 +70,9 @@ class PostsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Post $post)
     {
-        //
+        return view('posts.create')->with('post', $post);
     }
 
     /**
@@ -79,9 +82,23 @@ class PostsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateRequest $request, Post $post)
     {
-        //
+        $data = $request->only([
+            'title', 'content', 'description', 'published_at'
+        ]);
+
+        if ($request->hasFile('image')) {
+            $image = $request->image->store('posts');
+            $post->deleteImage();
+            $data['image'] = $image;
+        }
+
+        $post->update($data);
+
+        session()->flash('success', 'Post edited');
+
+        return redirect(route('posts.index'));
     }
 
     /**
@@ -92,6 +109,43 @@ class PostsController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $post = Post::withTrashed()->where('id', $id)->firstOrFail();
+
+        if ($post->trashed()) {
+            $post->deleteImage();
+            $post->forceDelete();
+        } else {
+            $post->delete();
+        }
+        session()->flash('success', 'Post deleted');
+
+        return redirect(route('posts.index'));
+    }
+
+    /**
+     * Display trashed posts.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function trashed()
+    {
+        $trashed = Post::onlyTrashed()->get();
+
+        return view('posts.index')->withPosts($trashed);
+    }
+
+    /**
+     * Restore trashed post
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    public function restore($id)
+    {
+        $post = Post::withTrashed()->where('id', $id)->firstOrFail();
+        $post->restore();
+
+        session()->flash('success', 'Post restored');
+
+        return redirect()->back();
     }
 }
