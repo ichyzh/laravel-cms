@@ -47,6 +47,20 @@
                     <input type="file" class="form-control" name="image" id="image" >
                 </div>
                 <div class="form-group">
+                    <label for="category_id">Category</label>
+                    <select name="category_id" id="category" class="form-control">
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}" 
+                                @if (isset($post) && $category->id == $post->category_id) 
+                                    selected 
+                                @endif
+                            >
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
                     <button type="submit" class="btn btn-success">
                         {{ isset($post) ? 'Edit' : 'Create' }}
                     </button>

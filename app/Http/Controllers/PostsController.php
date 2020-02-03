@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Category;
 use App\Http\Requests\Posts\CreateRequest;
 use App\Http\Requests\Posts\UpdateRequest;
 use App\Post;
@@ -10,6 +11,11 @@ use Illuminate\Support\Facades\Storage;
 
 class PostsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('verifyCategoriesCount')->only(['create', 'store']);
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -27,7 +33,7 @@ class PostsController extends Controller
      */
     public function create()
     {
-        return view('posts.create');
+        return view('posts.create')->with('categories', Category::all());
     }
 
     /**
@@ -41,6 +47,7 @@ class PostsController extends Controller
         $image = $request->image->store('posts');
 
         Post::create([
+            'category_id' => $request->category_id,
             'title' => $request->title,
             'description' => $request->description,
             'content' => $request->content,
@@ -72,7 +79,7 @@ class PostsController extends Controller
      */
     public function edit(Post $post)
     {
-        return view('posts.create')->with('post', $post);
+        return view('posts.create')->with('post', $post)->with('categories', Category::all());
     }
 
     /**
@@ -85,7 +92,7 @@ class PostsController extends Controller
     public function update(UpdateRequest $request, Post $post)
     {
         $data = $request->only([
-            'title', 'content', 'description', 'published_at'
+            'title', 'content', 'description', 'published_at', 'category_id'
         ]);
 
         if ($request->hasFile('image')) {
