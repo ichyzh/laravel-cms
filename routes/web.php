@@ -17,6 +17,8 @@ Auth::routes();
 
 Route::get('/', 'WelcomeController@index')->name('welcome');
 Route::get('blog/posts/{post}', [PostsController::class, 'show'])->name('blog.show');
+Route::get('blog/categories/{category}', [PostsController::class, 'category'])->name('blog.category');
+Route::get('blog/tags/{tag}', [PostsController::class, 'tag'])->name('blog.tag');
 
 Route::middleware(['auth'])->group(function(){
     Route::get('/home', 'HomeController@index')->name('home');
